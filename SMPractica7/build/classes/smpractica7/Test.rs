@@ -1,0 +1,4 @@
+smpractica7.MiLinea
+smpractica7.ModoPintura
+smpractica7.MiRectangulo
+smpractica7.MiElipse
