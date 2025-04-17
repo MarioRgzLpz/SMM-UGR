@@ -10,12 +10,17 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 import javax.swing.JColorChooser;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.event.InternalFrameAdapter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import sm.mrl.iu.Lienzo2D;
 
 /**
@@ -30,6 +35,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private final ManejadorPropiedadesFiguras manejadorPropiedades = new ManejadorPropiedadesFiguras();
     private final ManejadorVentanaInterna manejadorVentana = new ManejadorVentanaInterna();
     private final ManejadorModoPintura manejadorModoPintura = new ManejadorModoPintura();
+    private final ManejadorRatonLienzo manejadorRatonLienzo = new ManejadorRatonLienzo();
     /**
      * Creates new form VentanaPrincipal
      */
@@ -37,9 +43,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         initComponents();
         this.setTitle("Ñaint");
         lienzo = getSelectedLienzo();
-        if (lienzo != null) {
-            lienzo.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-        }
         dialogoColor.addActionListener(manejadorColor);
         modoLinea.addActionListener(manejadorModoPintura);
         modoRectangulo.addActionListener(manejadorModoPintura);
@@ -89,6 +92,17 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         f = new File(getClass().getResource("/sonidos/metal-pipe.wav").getFile());
         vi.getLienzo2D().setSonidoEliminar(f);
     }
+    
+    public class ManejadorRatonLienzo extends MouseMotionAdapter {
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            lienzo = getSelectedLienzo();
+            if (lienzo != null) {
+                lienzo.setTextoBarraEstado();
+                barraEstado.setText(lienzo.getTextoBarraEstado());
+            }
+        }    
+    }
 
     public class ManejadorColor implements ActionListener {
 
@@ -118,6 +132,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 lienzo.setEliminar(eliminar.isSelected());
                 lienzo.setFijar(fijar.isSelected());
                 lienzo.setSeleccionar(seleccionar.isSelected());
+                barraEstado.setText(lienzo.getTextoBarraEstado());
                 Object source = ae.getSource();
                 if(source != seleccionar){
                     System.out.print("hola");
@@ -147,42 +162,71 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         @Override
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == botonMenuNuevo || ae.getSource() == botonNuevo) {
+                Dimension desktopSize = escritorio.getSize();
+                int xMargin = 75;
+                int yMargin = 50;
+                String anchoStr = (String) JOptionPane.showInputDialog(VentanaPrincipal.this, "Ingrese el ancho de la ventana (valor maximo por defecto):", 
+                        "Dimensiones de la ventana", JOptionPane.QUESTION_MESSAGE, null, null, desktopSize.width - 2*xMargin);
+                if (anchoStr == null) return;
+                
+                int anchoDibujo = Integer.parseInt(anchoStr);
+
+                String altoStr = (String) JOptionPane.showInputDialog(null, "Ingrese el alto de la ventana (valor maximo por defecto):", 
+                        "Dimensiones de la ventana", JOptionPane.QUESTION_MESSAGE, null, null, desktopSize.height - 2*yMargin);
+                if (altoStr == null) return;
+
+                int altoDibujo = Integer.parseInt(altoStr);
                 VentanaInterna vi = new VentanaInterna();
                 VentanaPrincipal.this.añadirSonidosVentana(vi);
+                vi.getLienzo2D().addMouseMotionListener(manejadorRatonLienzo);
+                vi.getLienzo2D().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 escritorio.add(vi);
-                Dimension desktopSize = escritorio.getSize();
                 vi.addInternalFrameListener(VentanaPrincipal.this.manejadorVentana);
-                vi.setSize(desktopSize);
-                vi.setLocation(0, 0);
+                vi.setSize(anchoDibujo + 2*xMargin, altoDibujo + 2*yMargin);
                 BufferedImage img = new BufferedImage(
-                        desktopSize.width,
-                        desktopSize.height,
+                        vi.getWidth(),
+                        vi.getHeight(),
                         BufferedImage.TYPE_INT_RGB
                 );
                 Graphics2D g2d = img.createGraphics();
                 g2d.setColor(new Color(220, 220, 220));
-                g2d.fillRect(0, 0, desktopSize.width, desktopSize.height);
+                g2d.fillRect(0, 0, img.getWidth(), img.getHeight());
                 g2d.setColor(Color.WHITE);
-                int xMargin = 200, yMargin = 100;
-                g2d.fillRect(xMargin, yMargin, desktopSize.width - 2 * xMargin - 15, desktopSize.height - 2 * yMargin - 35);
+                g2d.fillRect(
+                    xMargin,  
+                    yMargin, 
+                    anchoDibujo, 
+                    altoDibujo - barraEstado.getHeight()
+                );
                 g2d.dispose();
                 vi.getLienzo2D().setImagen(img);
+                vi.getLienzo2D().setXMargin(xMargin);
+                vi.getLienzo2D().setYMargin(yMargin);
+                vi.getLienzo2D().setAlturaBarraEstado(barraEstado.getHeight());
+                vi.setLocation(0, 0);
                 vi.setVisible(true);
                 
             } else if (ae.getSource() == botonMenuAbrir || ae.getSource() == botonAbrir) {
                 JFileChooser dlg = new JFileChooser();
+                dlg.setFileFilter(new FileNameExtensionFilter(Arrays.toString(ImageIO.getReaderFormatNames()), ImageIO.getReaderFormatNames()));
                 int resp = dlg.showOpenDialog(null);
                 if (resp == JFileChooser.APPROVE_OPTION) {
                     try {
-                        File f = dlg.getSelectedFile();
-                        BufferedImage img = ImageIO.read(f);
-                        VentanaInterna vi = new VentanaInterna();
-                        vi.getLienzo2D().setImagen(img);
-                        escritorio.add(vi);
-                        vi.setTitle(f.getName());
-                        vi.setVisible(true);
+                    File f = dlg.getSelectedFile();
+                    BufferedImage img = ImageIO.read(f);
+                    if (img == null) {
+                        throw new IllegalArgumentException("Formato de archivo no soportado");
+                    }
+                    VentanaInterna vi = new VentanaInterna();
+                    vi.getLienzo2D().setImagen(img);
+                    vi.getLienzo2D().addMouseMotionListener(manejadorRatonLienzo);
+                    vi.getLienzo2D().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+                    escritorio.add(vi);
+                    vi.setTitle(f.getName());
+                    vi.setVisible(true);
                     } catch (Exception ex) {
-                        System.err.println("Error al leer la imagen");
+                        JOptionPane.showMessageDialog(null, "Error al abrir la imagen: " + ex.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             } else if (ae.getSource() == botonMenuGuardar || ae.getSource() == botonGuardar) {
@@ -191,14 +235,23 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     BufferedImage img = vi.getLienzo2D().getPaintedImage();
                     if (img != null) {
                         JFileChooser dlg = new JFileChooser();
+                        dlg.setFileFilter(new FileNameExtensionFilter(Arrays.toString(ImageIO.getWriterFormatNames()), ImageIO.getWriterFormatNames()));
                         int resp = dlg.showSaveDialog(null);
                         if (resp == JFileChooser.APPROVE_OPTION) {
                             try {
                                 File f = dlg.getSelectedFile();
-                                ImageIO.write(img, "jpg", f);
+                                String fileName = f.getName();
+                                String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+
+                                if (!Arrays.asList(ImageIO.getWriterFormatNames()).contains(extension)) {
+                                    throw new IllegalArgumentException("Extensión de archivo no soportada");
+                                }
+
+                                ImageIO.write(img, extension, f);
                                 vi.setTitle(f.getName());
                             } catch (Exception ex) {
-                                System.err.println("Error al guardar la imagen");
+                                JOptionPane.showMessageDialog(null, "Error al guardar la imagen: " + ex.getMessage(),
+                                        "Error", JOptionPane.ERROR_MESSAGE);
                             }
                         }
                     }
@@ -428,6 +481,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         getContentPane().add(barraHerramientas, java.awt.BorderLayout.PAGE_START);
 
         escritorio.setPreferredSize(new java.awt.Dimension(600, 300));
+        escritorio.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                escritorioMouseMoved(evt);
+            }
+        });
 
         javax.swing.GroupLayout escritorioLayout = new javax.swing.GroupLayout(escritorio);
         escritorio.setLayout(escritorioLayout);
@@ -475,6 +533,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             lienzo.actualizarAtributos();
         }
     }//GEN-LAST:event_grosorStateChanged
+
+    private void escritorioMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_escritorioMouseMoved
+        if(lienzo != null){
+            lienzo.setTextoBarraEstado();
+            barraEstado.setText(lienzo.getTextoBarraEstado());
+        }
+    }//GEN-LAST:event_escritorioMouseMoved
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

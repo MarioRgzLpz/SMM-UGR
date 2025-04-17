@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import java.util.List;
 import java.util.ArrayList;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -36,7 +37,7 @@ import sm.mrl.graficos.MiElipse;
  */
 public class Lienzo2D extends javax.swing.JPanel {
    
-    private int xMargin = 200, yMargin = 100;
+    private int xMargin, yMargin , alturaBarraEstado;
     private Point p_inicial = new Point(-100, -100);
     private Point2D deltaClick = null;
     private Boolean primerPaso = true;
@@ -55,9 +56,31 @@ public class Lienzo2D extends javax.swing.JPanel {
     private Point coordenadasRaton = new Point(0, 0);
     private BufferedImage imagen;
     private File sonidoFijar, sonidoEliminar;
-
+    private String textoBarraEstado;
     public enum ModoPintura {
         LINEA, RECTANGULO, ELIPSE, CURVA
+    }
+    
+    public String getTextoBarraEstado() {
+        return textoBarraEstado;
+    }
+
+    public void setTextoBarraEstado() {
+        String textoBarraEstado;
+        String modo;
+        modo = modoPintura.toString();
+        if(seleccionar)
+            modo = "SELECCIONAR";
+        else if(eliminar)
+            modo = "ELIMINAR";
+        else if(fijar)
+            modo = "FIJAR";
+        textoBarraEstado = String.format("MODO: %s    GROSOR: %.2f    COORDENADAS ([X: %.2f ], [Y: %.2f ])",
+                                 modo,
+                                 trazo.getLineWidth(),
+                                 coordenadasRaton.getX(),
+                                 coordenadasRaton.getY());
+        this.textoBarraEstado = textoBarraEstado;
     }
     
     public void setSonidoFijar(File sonidoFijar) {
@@ -66,6 +89,18 @@ public class Lienzo2D extends javax.swing.JPanel {
 
     public void setSonidoEliminar(File sonidoEliminar) {
         this.sonidoEliminar = sonidoEliminar;
+    }
+    
+    public void setXMargin(int xMargin){
+        this.xMargin = xMargin;
+    }
+    
+    public void setYMargin(int yMargin){
+        this.yMargin = yMargin;
+    }
+    
+    public void setAlturaBarraEstado(int altura){
+        this.alturaBarraEstado = altura;
     }
 
     public BufferedImage getImagen() {
@@ -256,10 +291,7 @@ public class Lienzo2D extends javax.swing.JPanel {
         if (imagen != null) {
             g2d.drawImage(imagen, 0, 0, this);
         }
-        int rectWidth = this.getWidth() - 2 * xMargin;
-        int rectHeight = this.getHeight() - 2 * yMargin;
-        g2d.setClip(xMargin, yMargin, rectWidth, rectHeight);
-
+        recortar(g2d);
         for (JFigura figura : vShape) {
             figura.draw(g2d);
         }
@@ -293,15 +325,12 @@ public class Lienzo2D extends javax.swing.JPanel {
         BufferedImage imgout = new BufferedImage(imagen.getWidth(), imagen.getHeight(), imagen.getType());
         Graphics2D g2dImagen = imgout.createGraphics();
         
-        int rectWidth = this.getWidth() - 2 * xMargin;
-        int rectHeight = this.getHeight() - 2 * yMargin;
-        g2dImagen.setClip(xMargin, yMargin, rectWidth, rectHeight);
+        recortar(g2dImagen);
         if (imagen != null) {
             g2dImagen.drawImage(imagen, 0, 0, this);
         }
-        for (int i = vShape.size() - 1; i >= 0; i--) {
-            JFigura s = vShape.get(i);
-            s.draw(g2dImagen);
+        for (JFigura figura : vShape) {
+            figura.draw(g2dImagen);
         }
         return imgout;
     }   
@@ -327,6 +356,15 @@ public class Lienzo2D extends javax.swing.JPanel {
             System.err.println(ex);
         }
     }
+    
+    private void recortar(Graphics2D g2d){
+        int rectWidth = imagen.getWidth() - 2 * xMargin;
+        int rectHeight = imagen.getHeight() - 2 * yMargin - alturaBarraEstado;
+        Rectangle recorte = new Rectangle(xMargin, yMargin, rectWidth, rectHeight);
+        g2d.clip(recorte);
+    }
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -478,6 +516,7 @@ public class Lienzo2D extends javax.swing.JPanel {
             else if(fijar){
                 Graphics2D g2dImagen = imagen.createGraphics();
                 this.play(sonidoFijar);
+                recortar(g2dImagen);
                 forma2.draw(g2dImagen);
                 g2dImagen.dispose();
                 vShape.remove(forma2);
