@@ -36,8 +36,8 @@ import sm.mrl.graficos.MiElipse;
  * @author mariorl
  */
 public class Lienzo2D extends javax.swing.JPanel {
-   
-    private int xMargin, yMargin , alturaBarraEstado;
+
+    private int xMargin, yMargin, alturaBarraEstado;
     private Point p_inicial = new Point(-100, -100);
     private Point2D deltaClick = null;
     private Boolean primerPaso = true;
@@ -57,72 +57,143 @@ public class Lienzo2D extends javax.swing.JPanel {
     private BufferedImage imagen;
     private File sonidoFijar, sonidoEliminar;
     private String textoBarraEstado;
+
     public enum ModoPintura {
         LINEA, RECTANGULO, ELIPSE, CURVA
     }
-    
+
+    /**
+     * Obtiene el texto actual de la barra de estado.
+     *
+     * @return {@link String} Texto mostrado en la barra de estado.
+     */
     public String getTextoBarraEstado() {
         return textoBarraEstado;
     }
 
+    /**
+     * Configura el texto que se muestra en la barra de estado, basándose en el
+     * modo actual, el grosor del trazo y las coordenadas del ratón.
+     */
     public void setTextoBarraEstado() {
         String textoBarraEstado;
         String modo;
         modo = modoPintura.toString();
-        if(seleccionar)
+        if (seleccionar) {
             modo = "SELECCIONAR";
-        else if(eliminar)
+        } else if (eliminar) {
             modo = "ELIMINAR";
-        else if(fijar)
+        } else if (fijar) {
             modo = "FIJAR";
+        }
         textoBarraEstado = String.format("MODO: %s    GROSOR: %.2f    COORDENADAS ([X: %.2f ], [Y: %.2f ])",
-                                 modo,
-                                 trazo.getLineWidth(),
-                                 coordenadasRaton.getX(),
-                                 coordenadasRaton.getY());
+                modo,
+                trazo.getLineWidth(),
+                coordenadasRaton.getX(),
+                coordenadasRaton.getY());
         this.textoBarraEstado = textoBarraEstado;
     }
-    
+
+    /**
+     * Establece el archivo de sonido que se reproducirá al fijar un elemento.
+     *
+     * @param sonidoFijar Archivo de sonido para el evento de fijar.
+     */
     public void setSonidoFijar(File sonidoFijar) {
         this.sonidoFijar = sonidoFijar;
     }
 
+    /**
+     * Establece el archivo de sonido que se reproducirá al eliminar un
+     * elemento.
+     *
+     * @param sonidoEliminar Archivo de sonido para el evento de eliminar.
+     */
     public void setSonidoEliminar(File sonidoEliminar) {
         this.sonidoEliminar = sonidoEliminar;
     }
-    
-    public void setXMargin(int xMargin){
+
+    /**
+     * Configura el margen horizontal utilizado en la imagen.
+     *
+     * @param xMargin Valor del margen horizontal.
+     */
+    public void setXMargin(int xMargin) {
         this.xMargin = xMargin;
     }
-    
-    public void setYMargin(int yMargin){
+
+    /**
+     * Configura el margen vertical utilizado en la imagen.
+     *
+     * @param yMargin Valor del margen vertical.
+     */
+    public void setYMargin(int yMargin) {
         this.yMargin = yMargin;
     }
-    
-    public void setAlturaBarraEstado(int altura){
+
+    /**
+     * Configura la altura de la barra de estado.
+     *
+     * @param altura Altura de la barra de estado.
+     */
+    public void setAlturaBarraEstado(int altura) {
         this.alturaBarraEstado = altura;
     }
 
+    /**
+     * Obtiene la imagen actual utilizada.
+     *
+     * @return {@link BufferedImage} Imagen actual.
+     */
     public BufferedImage getImagen() {
         return imagen;
     }
 
+    /**
+     * Establece una nueva imagen para ser utilizada.
+     *
+     * @param imagen Nueva imagen a configurar.
+     */
     public void setImagen(BufferedImage imagen) {
         this.imagen = imagen;
     }
 
+    /**
+     * Obtiene el estado actual de la funcionalidad de eliminación.
+     *
+     * @return {@link Boolean} {@code true} si la funcionalidad de eliminar está
+     * activa, {@code false} en caso contrario.
+     */
     public Boolean getEliminar() {
         return eliminar;
     }
 
+    /**
+     * Activa o desactiva la funcionalidad de eliminación.
+     *
+     * @param eliminar {@code true} para activar la funcionalidad de eliminar,
+     * {@code false} para desactivarla.
+     */
     public void setEliminar(Boolean eliminar) {
         this.eliminar = eliminar;
     }
 
+    /**
+     * Obtiene el estado actual de la funcionalidad de fijar.
+     *
+     * @return {@link Boolean} {@code true} si la funcionalidad de fijar está
+     * activa, {@code false} en caso contrario.
+     */
     public Boolean getFijar() {
         return fijar;
     }
 
+    /**
+     * Activa o desactiva la funcionalidad de fijar.
+     *
+     * @param fijar {@code true} para activar la funcionalidad de fijar,
+     * {@code false} para desactivarla.
+     */
     public void setFijar(Boolean fijar) {
         this.fijar = fijar;
     }
@@ -222,12 +293,13 @@ public class Lienzo2D extends javax.swing.JPanel {
     public void setModoPintura(ModoPintura modoPintura) {
         this.modoPintura = modoPintura;
     }
+
     /**
      * Obtiene el color actual.
      *
      * @return el color actual
      */
-    
+
     public Color getColor() {
         return color;
     }
@@ -321,10 +393,16 @@ public class Lienzo2D extends javax.swing.JPanel {
         return null;
     }
 
+    /**
+     * Obtiene una imagen pintada basada en las configuraciones actuales,
+     * incluyendo las figuras y recortes aplicados al gráfico.
+     *
+     * @return {@link BufferedImage} La imagen resultante pintada.
+     */
     public BufferedImage getPaintedImage() {
         BufferedImage imgout = new BufferedImage(imagen.getWidth(), imagen.getHeight(), imagen.getType());
         Graphics2D g2dImagen = imgout.createGraphics();
-        
+
         recortar(g2dImagen);
         if (imagen != null) {
             g2dImagen.drawImage(imagen, 0, 0, this);
@@ -333,8 +411,12 @@ public class Lienzo2D extends javax.swing.JPanel {
             figura.draw(g2dImagen);
         }
         return imgout;
-    }   
-    
+    }
+
+    /**
+     * Actualiza los atributos de la figura seleccionada basándose en las
+     * propiedades actuales (como color, relleno, transparencia, etc.).
+     */
     public void actualizarAtributos() {
         forma.setSeleccionada(seleccionar);
         if (forma != null && seleccionar) {
@@ -346,7 +428,12 @@ public class Lienzo2D extends javax.swing.JPanel {
         }
         this.repaint();
     }
-    
+
+    /**
+     * Reproduce un archivo de sonido especificado.
+     *
+     * @param f Archivo de audio que se desea reproducir.
+     */
     private void play(File f) {
         try {
             Clip sound = AudioSystem.getClip();
@@ -356,15 +443,18 @@ public class Lienzo2D extends javax.swing.JPanel {
             System.err.println(ex);
         }
     }
-    
-    private void recortar(Graphics2D g2d){
+
+    /**
+     * Aplica un recorte al área de dibujo del objeto {@link Graphics2D}.
+     *
+     * @param g2d El objeto {@link Graphics2D} en el que se aplica el recorte.
+     */
+    private void recortar(Graphics2D g2d) {
         int rectWidth = imagen.getWidth() - 2 * xMargin;
         int rectHeight = imagen.getHeight() - 2 * yMargin - alturaBarraEstado;
         Rectangle recorte = new Rectangle(xMargin, yMargin, rectWidth, rectHeight);
         g2d.clip(recorte);
     }
-    
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -417,9 +507,8 @@ public class Lienzo2D extends javax.swing.JPanel {
             if (forma != null) {
                 deltaClick = new Point2D.Double(evt.getX() - forma.getX(), evt.getY() - forma.getY());
             }
-        } 
-        else {
-            if(!eliminar && !fijar){
+        } else {
+            if (!eliminar && !fijar) {
                 p_inicial = new Point(evt.getPoint());
                 switch (modoPintura) {
                     case LINEA:
@@ -465,7 +554,7 @@ public class Lienzo2D extends javax.swing.JPanel {
                 forma.setLocation(newPoint);
             }
         } else {
-            if(!eliminar && !fijar){
+            if (!eliminar && !fijar) {
                 if (forma instanceof MiLinea) {
                     ((MiLinea) forma).setLine(p_inicial, evt.getPoint());
                 } else if (forma instanceof JRectangularShape) {
@@ -507,13 +596,12 @@ public class Lienzo2D extends javax.swing.JPanel {
     private void formMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseMoved
         coordenadasRaton.setLocation(evt.getX(), evt.getY());
         forma2 = figuraSeleccionada(evt.getPoint());
-        if(forma2 != null){
-            if(eliminar){
+        if (forma2 != null) {
+            if (eliminar) {
                 this.play(sonidoEliminar);
                 vShape.remove(forma2);
                 this.repaint();
-            }
-            else if(fijar){
+            } else if (fijar) {
                 Graphics2D g2dImagen = imagen.createGraphics();
                 this.play(sonidoFijar);
                 recortar(g2dImagen);

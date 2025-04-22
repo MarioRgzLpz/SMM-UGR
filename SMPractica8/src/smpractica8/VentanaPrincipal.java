@@ -30,12 +30,15 @@ import sm.mrl.iu.Lienzo2D;
 public class VentanaPrincipal extends javax.swing.JFrame {
 
     private Lienzo2D lienzo;
+    private final int XMARGIN = 75;
+    private final int YMARGIN = 50;
     private final ManejadorColor manejadorColor = new ManejadorColor();
     private final ManejadorMenu manejadorMenu = new ManejadorMenu();
     private final ManejadorPropiedadesFiguras manejadorPropiedades = new ManejadorPropiedadesFiguras();
     private final ManejadorVentanaInterna manejadorVentana = new ManejadorVentanaInterna();
     private final ManejadorModoPintura manejadorModoPintura = new ManejadorModoPintura();
     private final ManejadorRatonLienzo manejadorRatonLienzo = new ManejadorRatonLienzo();
+
     /**
      * Creates new form VentanaPrincipal
      */
@@ -81,19 +84,40 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
     }
 
+    /**
+     * Obtiene el lienzo seleccionado en la ventana interna activa.
+     *
+     * @return El lienzo seleccionado, o null si no hay una ventana interna
+     * activa.
+     */
     private Lienzo2D getSelectedLienzo() {
         VentanaInterna vi = (VentanaInterna) escritorio.getSelectedFrame();
         return vi != null ? vi.getLienzo2D() : null;
     }
-    
-    private void añadirSonidosVentana(VentanaInterna vi){
+
+    /**
+     * Añade sonidos de fijar y eliminar a la ventana interna proporcionada.
+     *
+     * @param vi La ventana interna a la que se añaden los sonidos.
+     */
+    private void añadirSonidosVentana(VentanaInterna vi) {
         File f = new File(getClass().getResource("/sonidos/raaaah.wav").getFile());
         vi.getLienzo2D().setSonidoFijar(f);
         f = new File(getClass().getResource("/sonidos/metal-pipe.wav").getFile());
         vi.getLienzo2D().setSonidoEliminar(f);
     }
-    
+
+    /**
+     * Clase que maneja los eventos del ratón sobre el lienzo.
+     */
     public class ManejadorRatonLienzo extends MouseMotionAdapter {
+
+        /**
+         * Actualiza la barra de estado con las coordenadas del ratón al moverse
+         * sobre el lienzo.
+         *
+         * @param e Evento de movimiento del ratón.
+         */
         @Override
         public void mouseMoved(MouseEvent e) {
             lienzo = getSelectedLienzo();
@@ -101,11 +125,20 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 lienzo.setTextoBarraEstado();
                 barraEstado.setText(lienzo.getTextoBarraEstado());
             }
-        }    
+        }
     }
 
+    /**
+     * Clase que maneja los cambios de color en el lienzo.
+     */
     public class ManejadorColor implements ActionListener {
 
+        /**
+         * Gestiona la selección del color del trazo y actualiza el lienzo.
+         *
+         * @param ae Evento de acción que contiene la fuente de la acción
+         * realizada.
+         */
         @Override
         public void actionPerformed(ActionEvent ae) {
             lienzo = getSelectedLienzo();
@@ -122,8 +155,18 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Clase que maneja los cambios en el modo de pintura del lienzo.
+     */
     public class ManejadorModoPintura implements ActionListener {
 
+        /**
+         * Gestiona los cambios en el modo de pintura y actualiza las
+         * propiedades del lienzo.
+         *
+         * @param ae Evento de acción que contiene la fuente de la acción
+         * realizada.
+         */
         @Override
         public void actionPerformed(ActionEvent ae) {
             lienzo = getSelectedLienzo();
@@ -134,8 +177,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 lienzo.setSeleccionar(seleccionar.isSelected());
                 barraEstado.setText(lienzo.getTextoBarraEstado());
                 Object source = ae.getSource();
-                if(source != seleccionar){
-                    System.out.print("hola");
+                if (source != seleccionar) {
                     lienzo.actualizarAtributos();
                 }
                 if (source == modoLinea) {
@@ -158,22 +200,35 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Clase que maneja las acciones del menú de la aplicación.
+     */
     public class ManejadorMenu implements ActionListener {
+
+        /**
+         * Gestiona las acciones realizadas por el usuario en los elementos del
+         * menú.
+         *
+         * @param ae Evento de acción que contiene la fuente de la acción
+         * realizada.
+         */
         @Override
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == botonMenuNuevo || ae.getSource() == botonNuevo) {
                 Dimension desktopSize = escritorio.getSize();
-                int xMargin = 75;
-                int yMargin = 50;
-                String anchoStr = (String) JOptionPane.showInputDialog(VentanaPrincipal.this, "Ingrese el ancho de la ventana (valor maximo por defecto):", 
-                        "Dimensiones de la ventana", JOptionPane.QUESTION_MESSAGE, null, null, desktopSize.width - 2*xMargin);
-                if (anchoStr == null) return;
-                
+                String anchoStr = (String) JOptionPane.showInputDialog(VentanaPrincipal.this, "Ingrese el ancho de la ventana (valor maximo por defecto):",
+                        "Dimensiones de la ventana", JOptionPane.QUESTION_MESSAGE, null, null, desktopSize.width - 2 * XMARGIN);
+                if (anchoStr == null) {
+                    return;
+                }
+
                 int anchoDibujo = Integer.parseInt(anchoStr);
 
-                String altoStr = (String) JOptionPane.showInputDialog(null, "Ingrese el alto de la ventana (valor maximo por defecto):", 
-                        "Dimensiones de la ventana", JOptionPane.QUESTION_MESSAGE, null, null, desktopSize.height - 2*yMargin);
-                if (altoStr == null) return;
+                String altoStr = (String) JOptionPane.showInputDialog(null, "Ingrese el alto de la ventana (valor maximo por defecto):",
+                        "Dimensiones de la ventana", JOptionPane.QUESTION_MESSAGE, null, null, desktopSize.height - 2 * YMARGIN);
+                if (altoStr == null) {
+                    return;
+                }
 
                 int altoDibujo = Integer.parseInt(altoStr);
                 VentanaInterna vi = new VentanaInterna();
@@ -182,7 +237,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 vi.getLienzo2D().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 escritorio.add(vi);
                 vi.addInternalFrameListener(VentanaPrincipal.this.manejadorVentana);
-                vi.setSize(anchoDibujo + 2*xMargin, altoDibujo + 2*yMargin);
+                vi.setSize(anchoDibujo + 2 * XMARGIN, altoDibujo + 2 * YMARGIN);
                 BufferedImage img = new BufferedImage(
                         vi.getWidth(),
                         vi.getHeight(),
@@ -193,37 +248,37 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 g2d.fillRect(0, 0, img.getWidth(), img.getHeight());
                 g2d.setColor(Color.WHITE);
                 g2d.fillRect(
-                    xMargin,  
-                    yMargin, 
-                    anchoDibujo, 
-                    altoDibujo - barraEstado.getHeight()
+                        XMARGIN,
+                        YMARGIN,
+                        anchoDibujo,
+                        altoDibujo - barraEstado.getHeight()
                 );
                 g2d.dispose();
                 vi.getLienzo2D().setImagen(img);
-                vi.getLienzo2D().setXMargin(xMargin);
-                vi.getLienzo2D().setYMargin(yMargin);
+                vi.getLienzo2D().setXMargin(XMARGIN);
+                vi.getLienzo2D().setYMargin(YMARGIN);
                 vi.getLienzo2D().setAlturaBarraEstado(barraEstado.getHeight());
                 vi.setLocation(0, 0);
                 vi.setVisible(true);
-                
+
             } else if (ae.getSource() == botonMenuAbrir || ae.getSource() == botonAbrir) {
                 JFileChooser dlg = new JFileChooser();
                 dlg.setFileFilter(new FileNameExtensionFilter(Arrays.toString(ImageIO.getReaderFormatNames()), ImageIO.getReaderFormatNames()));
                 int resp = dlg.showOpenDialog(null);
                 if (resp == JFileChooser.APPROVE_OPTION) {
                     try {
-                    File f = dlg.getSelectedFile();
-                    BufferedImage img = ImageIO.read(f);
-                    if (img == null) {
-                        throw new IllegalArgumentException("Formato de archivo no soportado");
-                    }
-                    VentanaInterna vi = new VentanaInterna();
-                    vi.getLienzo2D().setImagen(img);
-                    vi.getLienzo2D().addMouseMotionListener(manejadorRatonLienzo);
-                    vi.getLienzo2D().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-                    escritorio.add(vi);
-                    vi.setTitle(f.getName());
-                    vi.setVisible(true);
+                        File f = dlg.getSelectedFile();
+                        BufferedImage img = ImageIO.read(f);
+                        if (img == null) {
+                            throw new IllegalArgumentException("Formato de archivo no soportado");
+                        }
+                        VentanaInterna vi = new VentanaInterna();
+                        vi.getLienzo2D().setImagen(img);
+                        vi.getLienzo2D().addMouseMotionListener(manejadorRatonLienzo);
+                        vi.getLienzo2D().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+                        escritorio.add(vi);
+                        vi.setTitle(f.getName());
+                        vi.setVisible(true);
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(null, "Error al abrir la imagen: " + ex.getMessage(),
                                 "Error", JOptionPane.ERROR_MESSAGE);
@@ -260,8 +315,19 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Clase que maneja las acciones relacionadas con las propiedades de las
+     * figuras, como relleno, transparencia y suavizado.
+     */
     public class ManejadorPropiedadesFiguras implements ActionListener {
 
+        /**
+         * Gestiona las acciones realizadas sobre las propiedades de las
+         * figuras.
+         *
+         * @param ae Evento de acción que contiene la fuente de la acción
+         * realizada.
+         */
         @Override
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == relleno) {
@@ -279,26 +345,42 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     lienzo.setAlisar(alisar.isSelected());
                 }
             }
-            
+
             lienzo.actualizarAtributos();
         }
     }
-    
+
+    /**
+     * Clase que maneja los eventos relacionados con las ventanas internas.
+     */
     public class ManejadorVentanaInterna extends InternalFrameAdapter {
+
+        /**
+         * Maneja el evento cuando una ventana interna se activa.
+         *
+         * @param evt Evento de activación de una ventana interna.
+         */
         @Override
-        public void internalFrameActivated(javax.swing.event.InternalFrameEvent evt){
+        public void internalFrameActivated(javax.swing.event.InternalFrameEvent evt) {
             VentanaInterna vi = (VentanaInterna) evt.getInternalFrame();
             lienzo = vi.getLienzo2D();
             actualizarInterfaz(lienzo);
         }
-        
-        private void actualizarInterfaz(Lienzo2D lienzo){
+
+        /**
+         * Actualiza la interfaz de usuario para reflejar las propiedades del
+         * lienzo actual.
+         *
+         * @param lienzo Lienzo2D cuya configuración se usa para actualizar la
+         * interfaz.
+         */
+        private void actualizarInterfaz(Lienzo2D lienzo) {
             dialogoColor.setBackground(lienzo.getColor());
             relleno.setSelected(lienzo.getRelleno());
             transparencia.setSelected(lienzo.getTransparencia());
             alisar.setSelected(lienzo.getAlisar());
             grosor.setValue((int) lienzo.getTrazo().getLineWidth());
-            
+
             Lienzo2D.ModoPintura modoPintura = lienzo.getModoPintura();
             if (modoPintura == Lienzo2D.ModoPintura.LINEA) {
                 modoLinea.setSelected(true);
@@ -308,15 +390,15 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 modoElipse.setSelected(true);
             } else if (modoPintura == Lienzo2D.ModoPintura.CURVA) {
                 modoCurva.setSelected(true);
-            } else if (lienzo.getSeleccionar()){
+            } else if (lienzo.getSeleccionar()) {
                 seleccionar.setSelected(true);
-            } else if (lienzo.getEliminar()){
+            } else if (lienzo.getEliminar()) {
                 eliminar.setSelected(true);
-            } else if (lienzo.getFijar()){
+            } else if (lienzo.getFijar()) {
                 fijar.setSelected(true);
             }
         }
-     
+
     }
 
     /**
@@ -528,14 +610,14 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void grosorStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_grosorStateChanged
-        if(lienzo != null){
+        if (lienzo != null) {
             lienzo.setTrazo((int) grosor.getValue());
             lienzo.actualizarAtributos();
         }
     }//GEN-LAST:event_grosorStateChanged
 
     private void escritorioMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_escritorioMouseMoved
-        if(lienzo != null){
+        if (lienzo != null) {
             lienzo.setTextoBarraEstado();
             barraEstado.setText(lienzo.getTextoBarraEstado());
         }
