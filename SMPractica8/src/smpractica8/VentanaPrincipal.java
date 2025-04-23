@@ -422,6 +422,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         seleccionar = new javax.swing.JToggleButton();
         fijar = new javax.swing.JToggleButton();
         eliminar = new javax.swing.JToggleButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
         panelColor = new javax.swing.JPanel();
         dialogoColor = new javax.swing.JToggleButton();
         relleno = new javax.swing.JToggleButton();
@@ -512,6 +513,9 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         eliminar.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         eliminar.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         barraHerramientas.add(eliminar);
+
+        jSeparator1.setBackground(new java.awt.Color(0, 0, 0));
+        barraHerramientas.add(jSeparator1);
 
         panelColor.setMaximumSize(new java.awt.Dimension(30, 30));
         panelColor.setPreferredSize(new java.awt.Dimension(30, 30));
@@ -641,6 +645,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JToggleButton fijar;
     private javax.swing.JSlider grosor;
     private javax.swing.ButtonGroup grupoModoDibujo;
+    private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JMenu menuArchivo;
     private javax.swing.JToggleButton modoCurva;
     private javax.swing.JToggleButton modoElipse;
