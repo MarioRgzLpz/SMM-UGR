@@ -8,7 +8,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -43,6 +42,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
     private Lienzo2D lienzo;
     private BufferedImage imgFuente = null;
+    private boolean actualizandoInterfaz = false;
     private final int XMARGIN = 75;
     private final int YMARGIN = 50;
     private final ManejadorMenu manejadorMenu = new ManejadorMenu();
@@ -224,7 +224,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         }
     }
-    
+
     /**
      * Clase que maneja las acciones relacionadas con las propiedades de las
      * figuras, como relleno, transparencia y suavizado.
@@ -257,16 +257,15 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                         lienzo.setColor(colorSeleccionado);
                     }
                 }
-                if(seleccionar.isSelected()){
+                if (seleccionar.isSelected()) {
                     lienzo.actualizarAtributosFormaSeleccionada();
-                    System.out.print("Actualizo");
                 }
             }
         }
 
         @Override
         public void stateChanged(ChangeEvent ae) {
-            if (lienzo != null) {
+            if (!actualizandoInterfaz && lienzo != null) {
                 lienzo.setTrazo((int) grosor.getValue());
                 lienzo.actualizarAtributosFormaSeleccionada();
             }
@@ -315,7 +314,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 BufferedImage img = new BufferedImage(
                         vi.getWidth(),
                         vi.getHeight(),
-                        BufferedImage.TYPE_INT_RGB
+                        BufferedImage.TYPE_INT_ARGB
                 );
                 Graphics2D g2d = img.createGraphics();
                 g2d.setColor(new Color(220, 220, 220));
@@ -367,7 +366,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     BufferedImage img = vi.getLienzo2D().getPaintedImage();
                     if (img != null) {
                         JFileChooser dlg = new JFileChooser();
-                        dlg.setFileFilter(new FileNameExtensionFilter(Arrays.toString(ImageIO.getWriterFormatNames()), ImageIO.getWriterFormatNames()));
+                        
+                        dlg.setFileFilter(new FileNameExtensionFilter("Imagenes con transparencia (*.PNG, *.png, *.tiff)","png","tiff","gif"));
                         int resp = dlg.showSaveDialog(null);
                         if (resp == JFileChooser.APPROVE_OPTION) {
                             try {
@@ -616,21 +616,27 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         @Override
         public void shapeAdded(LienzoEvent evt) {
-            //System.out.println("Figura " + evt.getForma() + " añadida");
+            System.out.println("Figura " + evt.getForma() + " añadida");
         }
 
         @Override
         public void shapeSelected(LienzoEvent evt) {
-            actualizarLienzoForma();
             actualizarInterfazForma(evt.getForma());
+            actualizarLienzoForma();
         }
 
         private void actualizarInterfazForma(JFigura forma) {
-            dialogoColor.setBackground(forma.getColor());
-            relleno.setSelected(forma.getRelleno());
-            transparencia.setSelected(forma.getTransparencia());
-            alisar.setSelected(forma.getAlisar());
-            grosor.setValue((int) forma.getTrazo().getLineWidth());
+            actualizandoInterfaz = true; 
+            try {
+                dialogoColor.setBackground(forma.getColor());
+                relleno.setSelected(forma.getRelleno()); 
+                transparencia.setSelected(forma.getTransparencia()); 
+                alisar.setSelected(forma.getAlisar());
+                grosor.setValue((int) forma.getTrazo().getLineWidth());
+            } finally {
+                actualizandoInterfaz = false;
+            }
+
         }
 
         private void actualizarLienzoForma() {

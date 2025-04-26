@@ -509,9 +509,7 @@ public class Lienzo2D extends javax.swing.JPanel {
         if (seleccionar) {
             forma = figuraSeleccionada(evt.getPoint());
             if (forma != null) {
-                System.out.print(color);
                 notifyShapeSelectedEvent(new LienzoEvent(this, forma));
-                System.out.print(color);
                 deltaClick = new Point2D.Double(evt.getX() - forma.getX(), evt.getY() - forma.getY());
             }
         } else {
