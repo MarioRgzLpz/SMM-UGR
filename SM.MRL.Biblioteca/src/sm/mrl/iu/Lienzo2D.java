@@ -6,6 +6,7 @@ package sm.mrl.iu;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.List;
@@ -14,9 +15,13 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import sm.mrl.events.LienzoEvent;
+import sm.mrl.events.LienzoListener;
 import sm.mrl.graficos.JFigura;
 import sm.mrl.graficos.JRectangularShape;
 import sm.mrl.graficos.MiCurva;
@@ -37,6 +42,7 @@ import sm.mrl.graficos.MiElipse;
  */
 public class Lienzo2D extends javax.swing.JPanel {
 
+    ArrayList<LienzoListener> lienzoEventListeners = new ArrayList();
     private int xMargin, yMargin, alturaBarraEstado;
     private Point p_inicial = new Point(-100, -100);
     private Point2D deltaClick = null;
@@ -56,42 +62,31 @@ public class Lienzo2D extends javax.swing.JPanel {
     private Point coordenadasRaton = new Point(0, 0);
     private BufferedImage imagen;
     private File sonidoFijar, sonidoEliminar;
-    private String textoBarraEstado;
 
     public enum ModoPintura {
         LINEA, RECTANGULO, ELIPSE, CURVA
     }
 
-    /**
-     * Obtiene el texto actual de la barra de estado.
-     *
-     * @return {@link String} Texto mostrado en la barra de estado.
-     */
-    public String getTextoBarraEstado() {
-        return textoBarraEstado;
+    public void addLienzoListener(LienzoListener listener) {
+        if (listener != null) {
+            lienzoEventListeners.add(listener);
+        }
     }
 
-    /**
-     * Configura el texto que se muestra en la barra de estado, basándose en el
-     * modo actual, el grosor del trazo y las coordenadas del ratón.
-     */
-    public void setTextoBarraEstado() {
-        String textoBarraEstado;
-        String modo;
-        modo = modoPintura.toString();
-        if (seleccionar) {
-            modo = "SELECCIONAR";
-        } else if (eliminar) {
-            modo = "ELIMINAR";
-        } else if (fijar) {
-            modo = "FIJAR";
+    private void notifyShapeAddedEvent(LienzoEvent evt) {
+        if (!lienzoEventListeners.isEmpty()) {
+            for (LienzoListener listener : lienzoEventListeners) {
+                listener.shapeAdded(evt);
+            }
         }
-        textoBarraEstado = String.format("MODO: %s    GROSOR: %.2f    COORDENADAS ([X: %.2f ], [Y: %.2f ])",
-                modo,
-                trazo.getLineWidth(),
-                coordenadasRaton.getX(),
-                coordenadasRaton.getY());
-        this.textoBarraEstado = textoBarraEstado;
+    }
+
+    private void notifyShapeSelectedEvent(LienzoEvent evt) {
+        if (!lienzoEventListeners.isEmpty()) {
+            for (LienzoListener listener : lienzoEventListeners) {
+                listener.shapeSelected(evt);
+            }
+        }
     }
 
     /**
@@ -146,7 +141,10 @@ public class Lienzo2D extends javax.swing.JPanel {
      * @return {@link BufferedImage} Imagen actual.
      */
     public BufferedImage getImagen() {
-        return imagen;
+        ColorModel cm = imagen.getColorModel();
+        WritableRaster raster = imagen.copyData(null);
+        boolean alfaPre = imagen.isAlphaPremultiplied();
+        return new BufferedImage(cm, raster, alfaPre, null);
     }
 
     /**
@@ -299,7 +297,6 @@ public class Lienzo2D extends javax.swing.JPanel {
      *
      * @return el color actual
      */
-
     public Color getColor() {
         return color;
     }
@@ -339,7 +336,14 @@ public class Lienzo2D extends javax.swing.JPanel {
     public Point getCoordenadasRaton() {
         return coordenadasRaton;
     }
+    
+    public void setForma(JFigura forma){
+        this.forma = forma;
+    }
 
+    public JFigura getForma(){
+        return forma;
+    }
     /**
      * Constructor de la clase Lienzo2D. Inicializa los componentes gráficos del
      * lienzo, configurando el entorno para el dibujo de figuras.
@@ -417,9 +421,9 @@ public class Lienzo2D extends javax.swing.JPanel {
      * Actualiza los atributos de la figura seleccionada basándose en las
      * propiedades actuales (como color, relleno, transparencia, etc.).
      */
-    public void actualizarAtributos() {
-        forma.setSeleccionada(seleccionar);
+    public void actualizarAtributosFormaSeleccionada() {
         if (forma != null && seleccionar) {
+            forma.setSeleccionada(seleccionar);
             forma.setColor(color);
             forma.setRelleno(relleno);
             forma.setTransparencia(transparencia);
@@ -505,6 +509,9 @@ public class Lienzo2D extends javax.swing.JPanel {
         if (seleccionar) {
             forma = figuraSeleccionada(evt.getPoint());
             if (forma != null) {
+                System.out.print(color);
+                notifyShapeSelectedEvent(new LienzoEvent(this, forma));
+                System.out.print(color);
                 deltaClick = new Point2D.Double(evt.getX() - forma.getX(), evt.getY() - forma.getY());
             }
         } else {
@@ -535,6 +542,7 @@ public class Lienzo2D extends javax.swing.JPanel {
                 forma.setTrazo(trazo);
                 if (primerPaso) {
                     vShape.add(forma);
+                    notifyShapeAddedEvent(new LienzoEvent(this, forma));
                 }
             }
 

@@ -5,6 +5,9 @@
         <group>
             <file>file:/home/mariorl/Desktop/DGIIM/SMM/SM.MRL.Biblioteca/src/sm/mrl/iu/Lienzo2D.java</file>
             <file>file:/home/mariorl/Desktop/DGIIM/SMM/SM.MRL.Biblioteca/src/sm/mrl/graficos/JFigura.java</file>
+            <file>file:/home/mariorl/Desktop/DGIIM/SMM/SM.MRL.Biblioteca/src/sm/mrl/events/LienzoListener.java</file>
+            <file>file:/home/mariorl/Desktop/DGIIM/SMM/SM.MRL.Biblioteca/src/sm/mrl/events/LienzoEvent.java</file>
+            <file>file:/home/mariorl/Desktop/DGIIM/SMM/SM.MRL.Biblioteca/src/sm/mrl/events/LienzoAdapter.java</file>
         </group>
     </open-files>
 </project-private>
