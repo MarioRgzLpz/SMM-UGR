@@ -67,12 +67,25 @@ public class Lienzo2D extends javax.swing.JPanel {
         LINEA, RECTANGULO, ELIPSE, CURVA
     }
 
+    /**
+     * Añade un listener para eventos relacionados con el lienzo.
+     *
+     * @param listener Objeto que implementa la interfaz LienzoListener para
+     * manejar eventos del lienzo.
+     */
     public void addLienzoListener(LienzoListener listener) {
         if (listener != null) {
             lienzoEventListeners.add(listener);
         }
     }
 
+    /**
+     * Notifica a los listeners registrados que se ha añadido una figura al
+     * lienzo.
+     *
+     * @param evt Evento de tipo LienzoEvent que contiene información de la
+     * figura añadida.
+     */
     private void notifyShapeAddedEvent(LienzoEvent evt) {
         if (!lienzoEventListeners.isEmpty()) {
             for (LienzoListener listener : lienzoEventListeners) {
@@ -81,6 +94,13 @@ public class Lienzo2D extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Notifica a los listeners registrados que se ha seleccionado una figura en
+     * el lienzo.
+     *
+     * @param evt Evento de tipo LienzoEvent que contiene información de la
+     * figura seleccionada.
+     */
     private void notifyShapeSelectedEvent(LienzoEvent evt) {
         if (!lienzoEventListeners.isEmpty()) {
             for (LienzoListener listener : lienzoEventListeners) {
@@ -336,14 +356,25 @@ public class Lienzo2D extends javax.swing.JPanel {
     public Point getCoordenadasRaton() {
         return coordenadasRaton;
     }
-    
-    public void setForma(JFigura forma){
+
+    /**
+     * Establece la figura que se dibujará o manipulará en el lienzo.
+     *
+     * @param forma Objeto de tipo JFigura que representa la figura a asignar.
+     */
+    public void setForma(JFigura forma) {
         this.forma = forma;
     }
 
-    public JFigura getForma(){
+    /**
+     * Obtiene la figura actual asignada al lienzo.
+     *
+     * @return Figura de tipo JFigura actualmente asignada.
+     */
+    public JFigura getForma() {
         return forma;
     }
+
     /**
      * Constructor de la clase Lienzo2D. Inicializa los componentes gráficos del
      * lienzo, configurando el entorno para el dibujo de figuras.

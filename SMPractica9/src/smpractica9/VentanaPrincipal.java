@@ -20,6 +20,7 @@ import java.awt.image.Kernel;
 import java.awt.image.RescaleOp;
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.JColorChooser;
 import javax.swing.JFileChooser;
@@ -366,8 +367,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     BufferedImage img = vi.getLienzo2D().getPaintedImage();
                     if (img != null) {
                         JFileChooser dlg = new JFileChooser();
-                        
-                        dlg.setFileFilter(new FileNameExtensionFilter("Imagenes con transparencia (*.PNG, *.png, *.tiff)","png","tiff","gif"));
+                        List<String> extensionesSoportadas = List.of("png", "tiff", "gif", "PNG");
+                        dlg.setFileFilter(new FileNameExtensionFilter("Imagenes con transparencia (*.PNG, *.png, *.tiff, *.gif)", ImageIO.getWriterFormatNames()));
                         int resp = dlg.showSaveDialog(null);
                         if (resp == JFileChooser.APPROVE_OPTION) {
                             try {
@@ -375,7 +376,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                                 String fileName = f.getName();
                                 String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
 
-                                if (!Arrays.asList(ImageIO.getWriterFormatNames()).contains(extension)) {
+                                if (!extensionesSoportadas.contains(extension)) {
                                     throw new IllegalArgumentException("Extensión de archivo no soportada");
                                 }
 
@@ -442,8 +443,19 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Clase que maneja las acciones relacionadas con el menú de edición de
+     * imágenes.
+     */
     class ManejadorMenuImagen implements ActionListener {
 
+        /**
+         * Método que gestiona las acciones realizadas sobre el menú de edición
+         * de imágenes. Realiza operaciones como reescalar y aplicar
+         * convoluciones en las imágenes.
+         *
+         * @param ae Evento de acción que activa este método.
+         */
         @Override
         public void actionPerformed(ActionEvent ae) {
             if (ae.getSource() == botonReescalar) {
@@ -482,8 +494,17 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Clase que maneja las propiedades y eventos relacionados con imágenes,
+     * como brillo, contraste, desenfoque y perfilado.
+     */
     class ManejadorPropiedadesImagenes implements ActionListener, ChangeListener, FocusListener {
 
+        /**
+         * Método que se activa al ganar el foco un componente asociado.
+         *
+         * @param e Evento de foco que activa este método.
+         */
         @Override
         public void focusGained(FocusEvent e) {
             if (lienzo != null && lienzo.getImagen() != null) {
@@ -491,6 +512,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         }
 
+        /**
+         * Método que se activa al perder el foco un componente asociado.
+         *
+         * @param e Evento de foco que activa este método.
+         */
         @Override
         public void focusLost(FocusEvent e) {
             if (lienzo != null && imgFuente != null) {
@@ -499,6 +525,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         }
 
+        /**
+         * Método que maneja los cambios de estado en componentes relacionados.
+         * Aplica efectos como brillo, contraste, desenfoque o perfilado en la
+         * imagen.
+         *
+         * @param evt Evento de cambio de estado que activa este método.
+         */
         @Override
         public void stateChanged(ChangeEvent evt) {
             if (lienzo != null && imgFuente != null) {
@@ -524,6 +557,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         }
 
+        /**
+         * Método que gestiona las acciones realizadas sobre los componentes.
+         * Aplica filtros seleccionados de una lista a la imagen.
+         *
+         * @param ae Evento de acción que activa este método.
+         */
         @Override
         public void actionPerformed(ActionEvent ae) {
             if (lienzo != null && ae.getSource() == listaFiltros && lienzo.getImagen() != null) {
@@ -574,6 +613,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         }
 
+        /**
+         * Genera una máscara para aplicar un filtro de media con el tamaño
+         * indicado.
+         *
+         * @param tamaño Tamaño de la máscara cuadrada.
+         * @return Máscara de filtro de media como un arreglo de flotantes.
+         */
         private float[] generarMascaraMedia(int tamaño) {
             float[] kernel = new float[tamaño * tamaño];
             float valor = 1.0f / (tamaño * tamaño);
@@ -581,22 +627,45 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             return kernel;
         }
 
+        /**
+         * Genera una máscara para aplicar un filtro de perfilado con un factor
+         * de intensidad.
+         *
+         * @param a Factor de intensidad para el perfilado.
+         * @return Máscara de perfilado como un arreglo de flotantes.
+         */
         private float[] generarMascaraPerfilado(float a) {
             return new float[]{0, -a, 0, -a, 4 * a + 1, -a, 0, -a, 0};
         }
 
+        /**
+         * Aplica un ajuste de brillo a la imagen dada.
+         *
+         * @param imagen Imagen a la que se aplicará el brillo.
+         */
         private void aplicarBrillo(BufferedImage imagen) {
             float factorSuma = brillo.getValue();
             RescaleOp op = new RescaleOp(1.0f, factorSuma, null);
             op.filter(imagen, imagen);
         }
 
+        /**
+         * Aplica un ajuste de contraste a la imagen dada.
+         *
+         * @param imagen Imagen a la que se aplicará el contraste.
+         */
         private void aplicarContraste(BufferedImage imagen) {
             float factorEscala = contraste.getValue() / 10f;
             RescaleOp op = new RescaleOp(factorEscala, 0.0f, null);
             op.filter(imagen, imagen);
         }
 
+        /**
+         * Aplica un efecto de desenfoque a la imagen dada.
+         *
+         * @param imagen Imagen fuente sobre la que se aplica el desenfoque.
+         * @param imagendst Imagen destino con el desenfoque aplicado.
+         */
         private void aplicarDesenfoque(BufferedImage imagen, BufferedImage imagendst) {
             int tamaño = desenfoque.getValue();
             float[] kernel = generarMascaraMedia(tamaño);
@@ -604,6 +673,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             op.filter(imagen, imagendst);
         }
 
+        /**
+         * Aplica un efecto de perfilado a la imagen dada.
+         *
+         * @param imagen Imagen fuente sobre la que se aplica el perfilado.
+         * @param imagendst Imagen destino con el perfilado aplicado.
+         */
         private void aplicarPerfilado(BufferedImage imagen, BufferedImage imagendst) {
             float a = perfilado.getValue();
             float[] kernel = generarMascaraPerfilado(a);
@@ -612,25 +687,46 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Clase que maneja eventos relacionados con el lienzo y las figuras
+     * dibujadas en él.
+     */
     public class ManejadorLienzo extends LienzoAdapter {
 
+        /**
+         * Método que se activa al añadir una figura al lienzo.
+         *
+         * @param evt Evento que contiene información de la figura añadida.
+         */
         @Override
         public void shapeAdded(LienzoEvent evt) {
             System.out.println("Figura " + evt.getForma() + " añadida");
         }
 
+        /**
+         * Método que se activa al seleccionar una figura en el lienzo.
+         *
+         * @param evt Evento que contiene información de la figura seleccionada.
+         */
         @Override
         public void shapeSelected(LienzoEvent evt) {
             actualizarInterfazForma(evt.getForma());
             actualizarLienzoForma();
         }
 
+        /**
+         * Actualiza la interfaz gráfica con las propiedades de la figura
+         * seleccionada.
+         *
+         * @param forma Figura seleccionada cuyas propiedades serán reflejadas
+         * en la interfaz.
+         */
         private void actualizarInterfazForma(JFigura forma) {
-            actualizandoInterfaz = true; 
+            actualizandoInterfaz = true;
             try {
                 dialogoColor.setBackground(forma.getColor());
-                relleno.setSelected(forma.getRelleno()); 
-                transparencia.setSelected(forma.getTransparencia()); 
+                relleno.setSelected(forma.getRelleno());
+                transparencia.setSelected(forma.getTransparencia());
                 alisar.setSelected(forma.getAlisar());
                 grosor.setValue((int) forma.getTrazo().getLineWidth());
             } finally {
@@ -639,6 +735,10 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         }
 
+        /**
+         * Actualiza las propiedades del lienzo basadas en los controles de la
+         * interfaz.
+         */
         private void actualizarLienzoForma() {
             if (lienzo != null) {
                 lienzo.setRelleno(relleno.isSelected());
