@@ -166,6 +166,15 @@ public class Lienzo2D extends javax.swing.JPanel {
         boolean alfaPre = imagen.isAlphaPremultiplied();
         return new BufferedImage(cm, raster, alfaPre, null);
     }
+    
+    /**
+     * Obtiene la imagen actual utilizada.
+     *
+     * @return {@link BufferedImage} Imagen actual.
+     */
+    public BufferedImage getImagenRef() {
+       return imagen;
+    }
 
     /**
      * Establece una nueva imagen para ser utilizada.
