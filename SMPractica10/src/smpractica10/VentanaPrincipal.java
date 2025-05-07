@@ -157,6 +157,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         vi.getLienzo2D().setSonidoEliminar(f);
     }
 
+    /**
+     * Actualiza el texto de la barra de estado con información sobre el modo de
+     * pintura, propiedades de la herramienta seleccionada y detalles de la
+     * imagen en la posición del puntero.
+     *
+     * @param lienzo el lienzo actual donde se realizan las operaciones de
+     * dibujo.
+     * @param e el evento del ratón que contiene las coordenadas actuales del
+     * puntero.
+     */
     public void setTextoBarraEstado(Lienzo2D lienzo, MouseEvent e) {
         String textoBarraEstado;
         String modo;
@@ -177,13 +187,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             int rgb = img.getRGB(x, y);
             color = new Color(rgb, true);
         }
-        
+
         textoBarraEstado = String.format(
                 "MODO: %s  GROSOR: %.2f  BRILLO: %d  CONTRASTE: %.2f  DESENFOQUE: %d  PERFILADO: %d    COORDENADAS ([X: %d], [Y: %d])     COLOR (R: %d, G: %d, B: %d)",
                 modo,
                 lienzo.getTrazo().getLineWidth(),
                 brillo.getValue(),
-                contraste.getValue()/10f,
+                contraste.getValue() / 10f,
                 desenfoque.getValue(),
                 perfilado.getValue(),
                 x, y,
@@ -801,8 +811,21 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Clase encargada de manejar la conversión de espacios de color y
+     * manipulación de bandas de imágenes. Implementa la interfaz ActionListener
+     * para responder a eventos de acción.
+     */
     public class ManejadorColor implements ActionListener {
 
+        /**
+         * Gestiona los eventos de acción sobre ciertos botones relacionados con
+         * imagenes. Realiza operaciones como la conversión de espacios de
+         * color, extracción de bandas de color, y combinación de bandas según
+         * la fuente del evento.
+         *
+         * @param ae el evento de acción que se dispara.
+         */
         @Override
         public void actionPerformed(ActionEvent ae) {
             if (lienzo != null && lienzo.getImagen() != null) {
@@ -890,6 +913,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         }
 
+        /**
+         * Obtiene una banda específica de una imagen en formato de escala de
+         * grises.
+         *
+         * @param img la imagen de la que se desea extraer la banda.
+         * @param banda el índice de la banda a extraer (0 para rojo, 1 para
+         * verde, 2 para azul).
+         * @return una nueva imagen en escala de grises correspondiente a la
+         * banda seleccionada.
+         */
         private BufferedImage getImageBand(BufferedImage img, int banda) {
             ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             ComponentColorModel cm = new ComponentColorModel(cs, false, false,

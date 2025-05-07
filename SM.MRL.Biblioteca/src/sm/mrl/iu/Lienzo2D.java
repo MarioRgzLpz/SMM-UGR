@@ -156,9 +156,9 @@ public class Lienzo2D extends javax.swing.JPanel {
     }
 
     /**
-     * Obtiene la imagen actual utilizada.
+     * Obtiene una copia de la imagen actual utilizada.
      *
-     * @return {@link BufferedImage} Imagen actual.
+     * @return {@link BufferedImage} Copia de la imagen actual.
      */
     public BufferedImage getImagen() {
         ColorModel cm = imagen.getColorModel();
@@ -170,7 +170,7 @@ public class Lienzo2D extends javax.swing.JPanel {
     /**
      * Obtiene la imagen actual utilizada.
      *
-     * @return {@link BufferedImage} Imagen actual.
+     * @return {@link BufferedImage} La imagen actual.
      */
     public BufferedImage getImagenRef() {
        return imagen;
