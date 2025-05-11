@@ -1039,10 +1039,15 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }
 
     /**
-     * Clase encargada de manejar operaciones con LookupOp.
+     * Clase encargada de manejar operaciones relacionadas con LookupOp.
      */
     public class ManejadorLookUp implements ActionListener, ChangeListener {
 
+        /**
+         * Maneja los cambios de estado de los componentes relacionados.
+         *
+         * @param evt el evento de cambio que se ha producido
+         */
         @Override
         public void stateChanged(ChangeEvent evt) {
             int a = variableA.getValue();
@@ -1063,6 +1068,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         }
 
+        /**
+         * Maneja las acciones realizadas por el usuario en la interfaz.
+         *
+         * @param ae el evento de acción que se ha producido
+         */
         @Override
         public void actionPerformed(ActionEvent ae) {
             VentanaInterna vi = (VentanaInterna) (escritorio.getSelectedFrame());
@@ -1119,6 +1129,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         }
 
+        /**
+         * Aplica una transformación lineal en base a los valores de a, b y c.
+         *
+         * @param a valor inicial de la transformación
+         * @param b valor intermedio de la transformación
+         * @param c valor final de la transformación
+         */
         private void aplicarTransformacionABC(int a, int b, int c) {
             VentanaInterna vi = (VentanaInterna) escritorio.getSelectedFrame();
             try {
@@ -1134,6 +1151,15 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         }
 
+        /**
+         * Crea una tabla de búsqueda para realizar una transformación lineal.
+         *
+         * @param a valor inicial de la transformación
+         * @param b valor intermedio de la transformación
+         * @param c valor final de la transformación
+         * @return una instancia de {@link LookupTable} que representa la
+         * transformación
+         */
         public static LookupTable transformacionLinealABC(int a, int b, int c) {
             byte[] table = new byte[256];
 
@@ -1154,6 +1180,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
      */
     public class ManejadorTransformacionAfin implements ActionListener {
 
+        /**
+         * Maneja las acciones relacionadas con las transformaciones afines.
+         *
+         * @param ae el evento de acción que se ha producido
+         */
         @Override
         public void actionPerformed(ActionEvent ae) {
             VentanaInterna vi = (VentanaInterna) (escritorio.getSelectedFrame());
