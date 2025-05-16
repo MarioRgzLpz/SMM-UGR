@@ -82,8 +82,11 @@ public class MiCurva extends JFigura {
      */
     @Override
     public void setLocation(Point2D posPoint2D) {
-        double deltaX = posPoint2D.getX() - curva.getX1();
-        double deltaY = posPoint2D.getY() - curva.getY1();
+        double currentX = getX();
+        double currentY = getY();
+        double deltaX = posPoint2D.getX() - currentX;
+        double deltaY = posPoint2D.getY() - currentY;
+
         curva.setCurve(
             curva.getX1() + deltaX, curva.getY1() + deltaY,
             curva.getCtrlX() + deltaX, curva.getCtrlY() + deltaY,
