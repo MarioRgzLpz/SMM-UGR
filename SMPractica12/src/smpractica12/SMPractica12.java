@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package smpractica11;
+package smpractica12;
 
 import javax.swing.JFrame;
 
@@ -10,7 +10,7 @@ import javax.swing.JFrame;
  * Programa para ejecutar la ventana principal
  * @author mariorl
  */
-public class SMPractica11 {
+public class SMPractica12 {
 
     /**
      * @param args the command line arguments

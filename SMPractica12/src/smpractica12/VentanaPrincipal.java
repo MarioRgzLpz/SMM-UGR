@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package smpractica11;
+package smpractica12;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -45,10 +45,15 @@ import sm.image.ImageTools;
 import sm.mrl.iu.Lienzo2D;
 import sm.image.KernelProducer;
 import sm.image.LookupTableProducer;
+import sm.image.SepiaOp;
+import sm.image.TintOp;
 import sm.iu.DialogoFuncionABC;
 import sm.mrl.events.LienzoAdapter;
 import sm.mrl.events.LienzoEvent;
 import sm.mrl.graficos.JFigura;
+import sm.mrl.imagen.HSBOp;
+import sm.mrl.imagen.PosterizarOp;
+import sm.mrl.imagen.RojoOp;
 
 /**
  *
@@ -72,6 +77,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private final ManejadorColor manejadorColor = new ManejadorColor();
     private final ManejadorLookUp manejadorLookUp = new ManejadorLookUp();
     private final ManejadorTransformacionAfin manejadorTransformacionAfin = new ManejadorTransformacionAfin();
+    private final ManejadorOperacionesImagen manejadorOperacionesImagen = new ManejadorOperacionesImagen();
     DialogoFuncionABC dlgFuncion = new DialogoFuncionABC(this);
 
     /**
@@ -125,14 +131,23 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         variableA.addChangeListener(manejadorLookUp);
         variableB.addChangeListener(manejadorLookUp);
         variableC.addChangeListener(manejadorLookUp);
-        operacion.addActionListener(manejadorLookUp);
+        negativoscuros.addActionListener(manejadorLookUp);
         negativo.addActionListener(manejadorLookUp);
         rotacion180.addActionListener(manejadorTransformacionAfin);
         zoomIn.addActionListener(manejadorTransformacionAfin);
         zoomOut.addActionListener(manejadorTransformacionAfin);
-        variableA.setToolTipText("A");
-        variableB.setToolTipText("B");
-        variableC.setToolTipText("C");
+        tintado.addActionListener(manejadorOperacionesImagen);
+        alfaTintado.addChangeListener(manejadorOperacionesImagen);
+        alfaTintado.addFocusListener(manejadorOperacionesImagen);
+        sepia.addActionListener(manejadorOperacionesImagen);
+        posterizar.addChangeListener(manejadorOperacionesImagen);
+        posterizar.addFocusListener(manejadorOperacionesImagen);
+        filtroRojo.addActionListener(manejadorOperacionesImagen);
+        umbralRojo.addChangeListener(manejadorOperacionesImagen);
+        umbralRojo.addFocusListener(manejadorOperacionesImagen);
+        activadorColor.addActionListener(manejadorOperacionesImagen);
+        umbralT.addChangeListener(manejadorOperacionesImagen);
+        variableGamma.addChangeListener(manejadorOperacionesImagen);
         dialogoColor.setToolTipText("Color");
         modoLinea.setToolTipText("Linea");
         modoRectangulo.setToolTipText("Rectangulo");
@@ -170,7 +185,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         zoomIn.setToolTipText("Zoom In");
         zoomOut.setToolTipText("Zoom Out");
         activador.setToolTipText("Comenzar operacion especial");
-        operacion.setToolTipText("Negativo oscuros");
+        negativoscuros.setToolTipText("Negativo oscuros");
         negativo.setToolTipText("Negativo");
         variableA.setToolTipText(String.valueOf(variableA.getValue()));
         variableB.setToolTipText(String.valueOf(variableB.getValue()));
@@ -178,6 +193,18 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         variableA.setEnabled(false);
         variableB.setEnabled(false);
         variableC.setEnabled(false);
+        iconoPosterizar.setToolTipText("Posterizar");
+        tintado.setToolTipText("Tintado");
+        sepia.setToolTipText("Sepia");
+        filtroRojo.setToolTipText("Filtro Rojo");
+        activadorColor.setToolTipText("Comenzar cambio color especial");
+        posterizar.setToolTipText(String.valueOf("Alfa posterizado: " + String.valueOf(posterizar.getValue())));
+        alfaTintado.setToolTipText(String.valueOf("Alfa tintado: " + String.valueOf(alfaTintado.getValue())));
+        umbralRojo.setToolTipText(String.valueOf("Umbral Rojo: " + String.valueOf(umbralRojo.getValue())));
+        variableGamma.setToolTipText("Variable Gamma de desplazamiento: " + String.valueOf(variableGamma.getValue()));
+        umbralT.setToolTipText("Umbral T: " + String.valueOf(umbralT.getValue()));
+        umbralT.setEnabled(false);
+        variableGamma.setEnabled(false);
     }
 
     /**
@@ -1053,18 +1080,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             int a = variableA.getValue();
             int b = variableB.getValue();
             int c = variableC.getValue();
+            aplicarTransformacionABC(a, b, c);
             if (evt.getSource() == variableA) {
                 dlgFuncion.setA(a);
                 variableA.setToolTipText(String.valueOf(variableA.getValue()));
-                aplicarTransformacionABC(a, b, c);
             } else if (evt.getSource() == variableB) {
                 dlgFuncion.setB(b);
                 variableB.setToolTipText(String.valueOf(variableB.getValue()));
-                aplicarTransformacionABC(a, b, c);
             } else if (evt.getSource() == variableC) {
                 dlgFuncion.setC(c);
                 variableC.setToolTipText(String.valueOf(variableC.getValue()));
-                aplicarTransformacionABC(a, b, c);
             }
         }
 
@@ -1098,7 +1123,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                                 }
                                 imgFuente = null;
                             }
-                        } else if (ae.getSource() == operacion) {
+                        } else if (ae.getSource() == negativoscuros) {
                             aplicarTransformacionABC(255, 128, 255);
                         } else if (ae.getSource() == negativo) {
                             aplicarTransformacionABC(255, 128, 0);
@@ -1216,6 +1241,122 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }
 
     /**
+     * Clase encargada de manejar las distintas operaciones de color que
+     * aplicamos a las imagenes.
+     */
+    public class ManejadorOperacionesImagen implements ActionListener, ChangeListener, FocusListener {
+
+        /**
+         * Maneja las acciones relacionadas con las operaciones que modifican el
+         * color a las imagenes.
+         *
+         * @param evt el evento de acción que se ha producido
+         */
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            VentanaInterna vi = (VentanaInterna) (escritorio.getSelectedFrame());
+            if (vi != null) {
+                BufferedImage img = vi.getLienzo2D().getImagenRef();
+                imgFuente = vi.getLienzo2D().getImagen();
+                if (img != null) {
+                    try {
+                        if (evt.getSource() == tintado) {
+                            TintOp tintado = new TintOp(lienzo.getColor(), 0.5f);
+                            tintado.filter(img, img);
+                        } else if (evt.getSource() == sepia) {
+                            SepiaOp sepia = new SepiaOp();
+                            sepia.filter(img, img);
+                        } else if (evt.getSource() == filtroRojo) {
+                            RojoOp filtradoRojo = new RojoOp(0);
+                            filtradoRojo.filter(img, img);
+                        } else if (evt.getSource() == activadorColor) {
+                            umbralT.setEnabled(activadorColor.isSelected());
+                            variableGamma.setEnabled(activadorColor.isSelected());
+                            if (!activadorColor.isSelected()) {
+                                imgFuente = null;
+                            }
+                        }
+                        escritorio.repaint();
+
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Error en transformación afín: " + e.getLocalizedMessage());
+                    }
+                }
+            }
+        }
+
+        /**
+         * Maneja los cambios de estado de los componentes relacionados con
+         * operaciones de color.
+         *
+         * @param evt el evento de cambio que se ha producido
+         */
+        @Override
+        public void stateChanged(ChangeEvent evt) {
+            if (lienzo != null && imgFuente != null) {
+                BufferedImage img = lienzo.getImagenRef();
+                if (evt.getSource() == posterizar) {
+                    PosterizarOp posterizado = new PosterizarOp(posterizar.getValue());
+                    posterizado.filter(imgFuente, img);
+                    posterizar.setToolTipText("Alfa posterizado: " + String.valueOf(posterizar.getValue()));
+                } else if (evt.getSource() == umbralRojo) {
+                    RojoOp filtradoRojo = new RojoOp(umbralRojo.getValue());
+                    filtradoRojo.filter(imgFuente, img);
+                    umbralRojo.setToolTipText("Umbral rojo: " + String.valueOf(umbralRojo.getValue()));
+                } else if (evt.getSource() == alfaTintado) {
+                    TintOp tintado = new TintOp(lienzo.getColor(), alfaTintado.getValue() / 20.0f);
+                    tintado.filter(imgFuente, img);
+                    alfaTintado.setToolTipText("Alfa de tintado: " + String.valueOf(alfaTintado.getValue()));
+                } else if (evt.getSource() == umbralT || evt.getSource() == variableGamma) {
+                    int umbral = umbralT.getValue();
+                    int desplazamiento = variableGamma.getValue();
+                    Color colorSeleccionado = lienzo.getColor();
+                    int hReferencia = (int) (Color.RGBtoHSB(
+                            colorSeleccionado.getRed(),
+                            colorSeleccionado.getGreen(),
+                            colorSeleccionado.getBlue(),
+                            null
+                    )[0] * 360);
+                    HSBOp operadorColor = new HSBOp(hReferencia, umbral, desplazamiento);
+                    BufferedImage imgDest = operadorColor.filter(imgFuente, null);
+                    lienzo.setImagen(imgDest);
+                    if (evt.getSource() == umbralT) {
+                        umbralT.setToolTipText("Umbral T: " + String.valueOf(umbralT.getValue()));
+                    } else if (evt.getSource() == variableGamma) {
+                        variableGamma.setToolTipText("Variable Gamma de desplazamiento: " + String.valueOf(variableGamma.getValue()));
+                    }
+                }
+                escritorio.repaint();
+            }
+        }
+
+        /**
+         * Método que se activa al ganar el foco un componente asociado.
+         *
+         * @param e Evento de foco que activa este método.
+         */
+        @Override
+        public void focusGained(FocusEvent e) {
+            if (lienzo != null && lienzo.getImagen() != null) {
+                imgFuente = lienzo.getImagen();
+            }
+        }
+
+        /**
+         * Método que se activa al perder el foco un componente asociado.
+         *
+         * @param e Evento de foco que activa este método.
+         */
+        @Override
+        public void focusLost(FocusEvent e) {
+            if (lienzo != null && imgFuente != null) {
+                imgFuente = null;
+                escritorio.repaint();
+            }
+        }
+    }
+
+    /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
@@ -1270,7 +1411,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         variableA = new javax.swing.JSlider();
         variableB = new javax.swing.JSlider();
         variableC = new javax.swing.JSlider();
-        operacion = new javax.swing.JButton();
+        negativoscuros = new javax.swing.JButton();
         negativo = new javax.swing.JButton();
         separador5 = new javax.swing.JToolBar.Separator();
         rotacion180 = new javax.swing.JButton();
@@ -1279,8 +1420,18 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         separador6 = new javax.swing.JToolBar.Separator();
         bandas = new javax.swing.JButton();
         listaEspaciosColor = new javax.swing.JComboBox<>();
-        combinar = new javax.swing.JButton();
         separador7 = new javax.swing.JToolBar.Separator();
+        combinar = new javax.swing.JButton();
+        tintado = new javax.swing.JButton();
+        alfaTintado = new javax.swing.JSlider();
+        sepia = new javax.swing.JButton();
+        filtroRojo = new javax.swing.JButton();
+        umbralRojo = new javax.swing.JSlider();
+        iconoPosterizar = new javax.swing.JLabel();
+        posterizar = new javax.swing.JSlider();
+        activadorColor = new javax.swing.JToggleButton();
+        umbralT = new javax.swing.JSlider();
+        variableGamma = new javax.swing.JSlider();
         barraMenu = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         botonMenuNuevo = new javax.swing.JMenuItem();
@@ -1433,7 +1584,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         escritorio.setLayout(escritorioLayout);
         escritorioLayout.setHorizontalGroup(
             escritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1262, Short.MAX_VALUE)
+            .addGap(0, 1270, Short.MAX_VALUE)
         );
         escritorioLayout.setVerticalGroup(
             escritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1565,11 +1716,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         variableC.setPreferredSize(new java.awt.Dimension(50, 16));
         toolBarImagenes.add(variableC);
 
-        operacion.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/operador1.png"))); // NOI18N
-        operacion.setFocusable(false);
-        operacion.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        operacion.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        toolBarImagenes.add(operacion);
+        negativoscuros.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/operador1.png"))); // NOI18N
+        negativoscuros.setFocusable(false);
+        negativoscuros.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        negativoscuros.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBarImagenes.add(negativoscuros);
 
         negativo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/negativo.png"))); // NOI18N
         negativo.setFocusable(false);
@@ -1613,14 +1764,75 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         listaEspaciosColor.setPreferredSize(new java.awt.Dimension(100, 25));
         toolBarImagenes.add(listaEspaciosColor);
 
+        separador7.setBackground(new java.awt.Color(0, 0, 0));
+        toolBarImagenes.add(separador7);
+
         combinar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/combinar.png"))); // NOI18N
         combinar.setFocusable(false);
         combinar.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         combinar.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         toolBarImagenes.add(combinar);
 
-        separador7.setBackground(new java.awt.Color(0, 0, 0));
-        toolBarImagenes.add(separador7);
+        tintado.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/tintar.png"))); // NOI18N
+        tintado.setFocusable(false);
+        tintado.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tintado.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBarImagenes.add(tintado);
+
+        alfaTintado.setMaximum(20);
+        alfaTintado.setToolTipText("");
+        alfaTintado.setValue(0);
+        alfaTintado.setMaximumSize(new java.awt.Dimension(50, 16));
+        alfaTintado.setPreferredSize(new java.awt.Dimension(50, 16));
+        toolBarImagenes.add(alfaTintado);
+
+        sepia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/sepia.png"))); // NOI18N
+        sepia.setFocusable(false);
+        sepia.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        sepia.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBarImagenes.add(sepia);
+
+        filtroRojo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/rojo.png"))); // NOI18N
+        filtroRojo.setFocusable(false);
+        filtroRojo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        filtroRojo.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBarImagenes.add(filtroRojo);
+
+        umbralRojo.setMaximum(255);
+        umbralRojo.setMinimum(-510);
+        umbralRojo.setToolTipText("");
+        umbralRojo.setValue(-510);
+        umbralRojo.setMaximumSize(new java.awt.Dimension(50, 16));
+        umbralRojo.setPreferredSize(new java.awt.Dimension(50, 16));
+        toolBarImagenes.add(umbralRojo);
+
+        iconoPosterizar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/posterizar.png"))); // NOI18N
+        toolBarImagenes.add(iconoPosterizar);
+
+        posterizar.setMaximum(20);
+        posterizar.setMinimum(1);
+        posterizar.setToolTipText("");
+        posterizar.setMaximumSize(new java.awt.Dimension(50, 16));
+        posterizar.setPreferredSize(new java.awt.Dimension(50, 16));
+        toolBarImagenes.add(posterizar);
+
+        activadorColor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/paleta.png"))); // NOI18N
+        activadorColor.setFocusable(false);
+        activadorColor.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        activadorColor.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBarImagenes.add(activadorColor);
+
+        umbralT.setMaximum(180);
+        umbralT.setValue(0);
+        umbralT.setMaximumSize(new java.awt.Dimension(50, 16));
+        umbralT.setPreferredSize(new java.awt.Dimension(50, 16));
+        toolBarImagenes.add(umbralT);
+
+        variableGamma.setMaximum(360);
+        variableGamma.setValue(0);
+        variableGamma.setMaximumSize(new java.awt.Dimension(50, 16));
+        variableGamma.setPreferredSize(new java.awt.Dimension(50, 16));
+        toolBarImagenes.add(variableGamma);
 
         contenedor.add(toolBarImagenes, java.awt.BorderLayout.NORTH);
 
@@ -1687,6 +1899,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton activador;
+    private javax.swing.JToggleButton activadorColor;
+    private javax.swing.JSlider alfaTintado;
     private javax.swing.JToggleButton alisar;
     private javax.swing.JButton bandas;
     private javax.swing.JLabel barraEstado;
@@ -1718,12 +1932,14 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JToggleButton eliminar;
     private javax.swing.JDesktopPane escritorio;
     private javax.swing.JToggleButton fijar;
+    private javax.swing.JButton filtroRojo;
     private javax.swing.JSlider grosor;
     private javax.swing.ButtonGroup grupoModoDibujo;
     private javax.swing.JLabel iconoBrillo;
     private javax.swing.JLabel iconoContraste;
     private javax.swing.JLabel iconoDesenfoque;
     private javax.swing.JLabel iconoPerfilado;
+    private javax.swing.JLabel iconoPosterizar;
     private javax.swing.JComboBox<String> listaEspaciosColor;
     private javax.swing.JComboBox<String> listaFiltros;
     private javax.swing.JMenu menuArchivo;
@@ -1733,9 +1949,10 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JToggleButton modoLinea;
     private javax.swing.JToggleButton modoRectangulo;
     private javax.swing.JButton negativo;
-    private javax.swing.JButton operacion;
+    private javax.swing.JButton negativoscuros;
     private javax.swing.JPanel panelColor;
     private javax.swing.JSlider perfilado;
+    private javax.swing.JSlider posterizar;
     private javax.swing.JToggleButton relleno;
     private javax.swing.JButton rotacion180;
     private javax.swing.JToggleButton seleccionar;
@@ -1749,11 +1966,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JLabel separadorBlanco1;
     private javax.swing.JLabel separadorBlanco2;
     private javax.swing.JLabel separadorBlanco3;
+    private javax.swing.JButton sepia;
+    private javax.swing.JButton tintado;
     private javax.swing.JToolBar toolBarImagenes;
     private javax.swing.JToggleButton transparencia;
+    private javax.swing.JSlider umbralRojo;
+    private javax.swing.JSlider umbralT;
     private javax.swing.JSlider variableA;
     private javax.swing.JSlider variableB;
     private javax.swing.JSlider variableC;
+    private javax.swing.JSlider variableGamma;
     private javax.swing.JButton zoomIn;
     private javax.swing.JButton zoomOut;
     // End of variables declaration//GEN-END:variables
