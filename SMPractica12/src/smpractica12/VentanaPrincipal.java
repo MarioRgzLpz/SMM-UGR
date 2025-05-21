@@ -1893,7 +1893,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         nivelesColor.setMaximum(20);
         nivelesColor.setMinimum(2);
-        nivelesColor.setValue(20);
         nivelesColor.setMaximumSize(new java.awt.Dimension(50, 16));
         nivelesColor.setPreferredSize(new java.awt.Dimension(50, 16));
         toolBarImagenes.add(nivelesColor);

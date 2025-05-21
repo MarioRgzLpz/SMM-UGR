@@ -38,6 +38,7 @@ public class Retro8BitOp extends BufferedImageOpAdapter {
      * 8x8).
      * @param niveles Número de niveles de color por canal (por ejemplo, 4, 8,
      * 16).
+     * @param edgeDetectorType Tipo de detección de bordes.
      */
     public Retro8BitOp(int reduccionResolucion, int niveles, EdgeDetectorType edgeDetectorType) {
         this.reduccionResolucion = reduccionResolucion;
@@ -70,7 +71,6 @@ public class Retro8BitOp extends BufferedImageOpAdapter {
         WritableRaster pixelRaster = posterized.getRaster();
         WritableRaster edgeRaster = edges.getRaster();
         if (edgeDetectorType == EdgeDetectorType.NONE) {
-            // Usar directamente la imagen posterizada como resultado final
             dest.getRaster().setPixels(0, 0, posterized.getWidth(), posterized.getHeight(),
                     posterized.getRaster().getPixels(0, 0, posterized.getWidth(), posterized.getHeight(), (int[]) null));
             return dest;
