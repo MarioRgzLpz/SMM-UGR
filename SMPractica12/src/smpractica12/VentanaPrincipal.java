@@ -34,6 +34,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import javax.imageio.ImageIO;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JColorChooser;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -53,6 +54,7 @@ import sm.mrl.events.LienzoEvent;
 import sm.mrl.graficos.JFigura;
 import sm.mrl.imagen.HSBOp;
 import sm.mrl.imagen.PosterizarOp;
+import sm.mrl.imagen.Retro8BitOp;
 import sm.mrl.imagen.RojoOp;
 
 /**
@@ -86,6 +88,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     public VentanaPrincipal() {
         initComponents();
         this.setTitle("Ñaint");
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        for (Retro8BitOp.EdgeDetectorType type : Retro8BitOp.EdgeDetectorType.values()) {
+            model.addElement(type.name());
+        }
+        listaTiposDeteccion.setModel(model);
         modoLinea.addActionListener(manejadorModoPintura);
         modoRectangulo.addActionListener(manejadorModoPintura);
         modoElipse.addActionListener(manejadorModoPintura);
@@ -148,6 +155,9 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         activadorColor.addActionListener(manejadorOperacionesImagen);
         umbralT.addChangeListener(manejadorOperacionesImagen);
         variableGamma.addChangeListener(manejadorOperacionesImagen);
+        activadorRetro.addActionListener(manejadorOperacionesImagen);
+        reduccionResolucion.addChangeListener(manejadorOperacionesImagen);
+        nivelesColor.addChangeListener(manejadorOperacionesImagen);
         dialogoColor.setToolTipText("Color");
         modoLinea.setToolTipText("Linea");
         modoRectangulo.setToolTipText("Rectangulo");
@@ -205,6 +215,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         umbralT.setToolTipText("Umbral T: " + String.valueOf(umbralT.getValue()));
         umbralT.setEnabled(false);
         variableGamma.setEnabled(false);
+        activadorRetro.setToolTipText("Filtro Retro");
+        reduccionResolucion.setToolTipText("Reduccion de pixeles: " + String.valueOf(reduccionResolucion.getValue()));
+        nivelesColor.setToolTipText("Nivel posterizado: " + String.valueOf(nivelesColor.getValue()));
+        listaTiposDeteccion.setToolTipText("Filtros de deteccion de bordes");
+        reduccionResolucion.setEnabled(false);
+        nivelesColor.setEnabled(false);
     }
 
     /**
@@ -1275,6 +1291,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                             if (!activadorColor.isSelected()) {
                                 imgFuente = null;
                             }
+                        } else if (evt.getSource() == activadorRetro) {
+                            reduccionResolucion.setEnabled(activadorRetro.isSelected());
+                            nivelesColor.setEnabled(activadorRetro.isSelected());
+                            if (!activadorRetro.isSelected()) {
+                                imgFuente = null;
+                            }
                         }
                         escritorio.repaint();
 
@@ -1325,9 +1347,27 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     } else if (evt.getSource() == variableGamma) {
                         variableGamma.setToolTipText("Variable Gamma de desplazamiento: " + String.valueOf(variableGamma.getValue()));
                     }
+                } else if (evt.getSource() == reduccionResolucion || evt.getSource() == nivelesColor) {
+                    aplicarFiltroRetro();
+                    if (evt.getSource() == reduccionResolucion) {
+                        reduccionResolucion.setToolTipText("Reduccion de pixeles: " + String.valueOf(reduccionResolucion.getValue()));
+                    } else if (evt.getSource() == nivelesColor) {
+                        nivelesColor.setToolTipText("Nivel posterizado: " + String.valueOf(nivelesColor.getValue()));
+                    }
                 }
                 escritorio.repaint();
             }
+        }
+
+        private void aplicarFiltroRetro() {
+            int reduccion = reduccionResolucion.getValue();
+            int niveles = nivelesColor.getValue();
+            String selectedText = (String) listaTiposDeteccion.getSelectedItem();
+            Retro8BitOp.EdgeDetectorType tipoDeteccion = Retro8BitOp.EdgeDetectorType.valueOf(selectedText);
+
+            Retro8BitOp filtroRetro = new Retro8BitOp(reduccion, niveles, tipoDeteccion);
+            BufferedImage imgDest = filtroRetro.filter(imgFuente, null);
+            lienzo.setImagen(imgDest);
         }
 
         /**
@@ -1432,6 +1472,10 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         activadorColor = new javax.swing.JToggleButton();
         umbralT = new javax.swing.JSlider();
         variableGamma = new javax.swing.JSlider();
+        activadorRetro = new javax.swing.JToggleButton();
+        reduccionResolucion = new javax.swing.JSlider();
+        nivelesColor = new javax.swing.JSlider();
+        listaTiposDeteccion = new javax.swing.JComboBox<>();
         barraMenu = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         botonMenuNuevo = new javax.swing.JMenuItem();
@@ -1584,7 +1628,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         escritorio.setLayout(escritorioLayout);
         escritorioLayout.setHorizontalGroup(
             escritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1270, Short.MAX_VALUE)
+            .addGap(0, 1498, Short.MAX_VALUE)
         );
         escritorioLayout.setVerticalGroup(
             escritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1834,6 +1878,31 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         variableGamma.setPreferredSize(new java.awt.Dimension(50, 16));
         toolBarImagenes.add(variableGamma);
 
+        activadorRetro.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/retro.png"))); // NOI18N
+        activadorRetro.setFocusable(false);
+        activadorRetro.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        activadorRetro.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBarImagenes.add(activadorRetro);
+
+        reduccionResolucion.setMaximum(20);
+        reduccionResolucion.setMinimum(1);
+        reduccionResolucion.setValue(1);
+        reduccionResolucion.setMaximumSize(new java.awt.Dimension(50, 16));
+        reduccionResolucion.setPreferredSize(new java.awt.Dimension(50, 16));
+        toolBarImagenes.add(reduccionResolucion);
+
+        nivelesColor.setMaximum(20);
+        nivelesColor.setMinimum(2);
+        nivelesColor.setValue(20);
+        nivelesColor.setMaximumSize(new java.awt.Dimension(50, 16));
+        nivelesColor.setPreferredSize(new java.awt.Dimension(50, 16));
+        toolBarImagenes.add(nivelesColor);
+
+        listaTiposDeteccion.setMaximumSize(new java.awt.Dimension(100, 25));
+        listaTiposDeteccion.setMinimumSize(new java.awt.Dimension(100, 25));
+        listaTiposDeteccion.setPreferredSize(new java.awt.Dimension(100, 25));
+        toolBarImagenes.add(listaTiposDeteccion);
+
         contenedor.add(toolBarImagenes, java.awt.BorderLayout.NORTH);
 
         getContentPane().add(contenedor, java.awt.BorderLayout.SOUTH);
@@ -1900,6 +1969,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton activador;
     private javax.swing.JToggleButton activadorColor;
+    private javax.swing.JToggleButton activadorRetro;
     private javax.swing.JSlider alfaTintado;
     private javax.swing.JToggleButton alisar;
     private javax.swing.JButton bandas;
@@ -1942,6 +2012,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JLabel iconoPosterizar;
     private javax.swing.JComboBox<String> listaEspaciosColor;
     private javax.swing.JComboBox<String> listaFiltros;
+    private javax.swing.JComboBox<String> listaTiposDeteccion;
     private javax.swing.JMenu menuArchivo;
     private javax.swing.JMenu menuImagen;
     private javax.swing.JToggleButton modoCurva;
@@ -1950,9 +2021,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JToggleButton modoRectangulo;
     private javax.swing.JButton negativo;
     private javax.swing.JButton negativoscuros;
+    private javax.swing.JSlider nivelesColor;
     private javax.swing.JPanel panelColor;
     private javax.swing.JSlider perfilado;
     private javax.swing.JSlider posterizar;
+    private javax.swing.JSlider reduccionResolucion;
     private javax.swing.JToggleButton relleno;
     private javax.swing.JButton rotacion180;
     private javax.swing.JToggleButton seleccionar;
